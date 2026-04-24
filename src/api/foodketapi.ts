@@ -1,35 +1,39 @@
 import { supabase } from "../lib/supabase";
 import axios from "axios";
 
-const BACKEND_URL = "http://localhost:8000";
+const API_BASE = "http://localhost:8000/api";
 
-// AI 레시피 추천 요청 (FastAPI 경유)
+// --- AI 관련 ---
 export const getAiRecipe = async (ingredients: string[], userId: string) => {
-  const response = await axios.post(`${BACKEND_URL}/api/ai/recommend`, {
+  const { data } = await axios.post(`${API_BASE}/ai/recommend`, {
     ingredients,
     user_id: userId,
   });
-  return response.data;
+  return data;
 };
 
-// 거래 게시글 불러오기 (Supabase 직접 조회)
-export const fetchTradePosts = async () => {
+// --- 거래 게시판 관련 ---
+export const getTradePosts = async () => {
   const { data, error } = await supabase
     .from("trades")
-    .select("*, users(nickname)")
+    .select(`*, users(nickname, avatar_url)`)
     .order("created_at", { ascending: false });
   if (error) throw error;
   return data;
 };
 
-// 1:1 채팅 메시지 전송
-export const sendMessage = async (
-  chatId: string,
-  senderId: string,
-  content: string,
-) => {
-  const { error } = await supabase
-    .from("messages")
-    .insert({ chat_id: chatId, sender_id: senderId, content });
+export const createTradePost = async (postData: any) => {
+  const { data, error } = await supabase.from("trades").insert(postData);
   if (error) throw error;
+  return data;
+};
+
+// --- 커뮤니티 댓글 관련 ---
+export const getComments = async (postId: number) => {
+  const { data, error } = await supabase
+    .from("comments")
+    .select("*")
+    .eq("post_id", postId);
+  if (error) throw error;
+  return data;
 };
