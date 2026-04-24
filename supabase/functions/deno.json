@@ -1,0 +1,9 @@
+{
+  "$schema": "https://deno.land/x/deno/cli/schemas/config-schema.v1.json",
+  "imports": {
+    "@supabase/supabase-js": "jsr:@supabase/supabase-js@2.49.8"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window", "deno.unstable"]
+  }
+}
