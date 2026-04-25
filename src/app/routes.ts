@@ -17,7 +17,7 @@ import NotFound from "./components/NotFound";
 // [추가] pages 폴더에서 가져오는 새 컴포넌트들
 import MyRecipes from "../pages/my-posts/MyRecipes";
 import MySales from "../pages/sales/MySales";
-import Likes from "../pages/likes"; // 방금 만든 관심 목록
+import Likes from "../pages/likes/likes"; // 방금 만든 관심 목록
 import Account from "../pages/account"; // 방금 만든 계정 설정
 
 export const router = createBrowserRouter([
