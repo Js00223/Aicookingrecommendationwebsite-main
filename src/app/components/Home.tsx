@@ -1,14 +1,75 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
+import { supabase } from "../../utils/supabaseClient";
 import { Bot, Users, ShoppingCart, Clock, TrendingUp } from "lucide-react";
 
+// 데이터 타입 정의
+interface TradeItem {
+  id: string;
+  title: string;
+  item_name?: string;
+  price?: number;
+  image_url?: string;
+  content?: string;
+  type: "trade" | "community";
+  created_at: string;
+  // 유저 정보를 조인해서 가져올 경우 대비
+  user?: {
+    full_name: string;
+    avatar_url: string;
+  };
+}
+
 export default function Home() {
+  const [recipes, setRecipes] = useState<TradeItem[]>([]);
+  const [trades, setTrades] = useState<TradeItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchHomeData();
+  }, []);
+
+  const fetchHomeData = async () => {
+    try {
+      setLoading(true);
+
+      // 1. 인기 레시피 (community 타입) 가져오기
+      const { data: recipeData, error: recipeError } = await supabase
+        .from("trades")
+        .select("*")
+        .eq("type", "community")
+        .order("created_at", { ascending: false })
+        .limit(3);
+
+      // 2. 최근 거래 (trade 타입) 가져오기
+      const { data: tradeData, error: tradeError } = await supabase
+        .from("trades")
+        .select("*")
+        .eq("type", "trade")
+        .order("created_at", { ascending: false })
+        .limit(3);
+
+      if (recipeError) throw recipeError;
+      if (tradeError) throw tradeError;
+
+      setRecipes(recipeData || []);
+      setTrades(tradeData || []);
+    } catch (error) {
+      console.error("데이터 로딩 실패:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4">
           <h1 className="text-2xl font-bold text-orange-500">자취요리 AI</h1>
-          <p className="text-sm text-gray-600 mt-1">혼자서도 맛있게, 간편하게</p>
+          <p className="text-sm text-gray-600 mt-1">
+            혼자서도 맛있게, 간편하게
+          </p>
         </div>
       </header>
 
@@ -18,8 +79,12 @@ export default function Home() {
           <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 lg:p-8 text-white shadow-lg hover:shadow-xl transition-shadow mb-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl lg:text-2xl font-bold mb-2">AI 요리 추천</h2>
-                <p className="text-sm lg:text-base opacity-90">지금 먹고 싶은 음식을 찾아보세요</p>
+                <h2 className="text-xl lg:text-2xl font-bold mb-2">
+                  AI 요리 추천
+                </h2>
+                <p className="text-sm lg:text-base opacity-90">
+                  지금 먹고 싶은 음식을 찾아보세요
+                </p>
               </div>
               <Bot className="w-12 h-12 lg:w-16 lg:h-16 opacity-80" />
             </div>
@@ -62,37 +127,66 @@ export default function Home() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
-          {/* 인기 레시피 섹션 */}
+          {/* 인기 레시피 섹션 (DB 연동) */}
           <section className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-gray-800 flex items-center gap-2 text-lg">
                 <TrendingUp className="w-5 h-5 text-orange-500" />
                 인기 레시피
               </h3>
-              <Link to="/community" className="text-sm text-orange-500 font-medium">
+              <Link
+                to="/community"
+                className="text-sm text-orange-500 font-medium"
+              >
                 전체보기
               </Link>
             </div>
             <div className="space-y-3">
-              {mockRecipes.map((recipe) => (
-                <div key={recipe.id} className="flex gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0">
-                    <img src={recipe.image} alt={recipe.title} className="w-full h-full object-cover rounded-lg" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-gray-800 truncate">{recipe.title}</h4>
-                    <p className="text-xs text-gray-500 mt-1">{recipe.author}</p>
-                    <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
-                      <Clock className="w-3 h-3" />
-                      <span>{recipe.time}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+              {loading
+                ? [1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="h-24 bg-gray-100 animate-pulse rounded-lg"
+                    />
+                  ))
+                : recipes.map((recipe) => (
+                    <Link
+                      key={recipe.id}
+                      to={`/community/${recipe.id}`}
+                      className="block"
+                    >
+                      <div className="flex gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0">
+                          <img
+                            src={
+                              recipe.image_url ||
+                              "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop"
+                            }
+                            alt={recipe.title}
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-gray-800 truncate">
+                            {recipe.title}
+                          </h4>
+                          <p className="text-xs text-gray-500 mt-1">
+                            익명 요리사
+                          </p>
+                          <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                            <Clock className="w-3 h-3" />
+                            <span>
+                              {new Date(recipe.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
             </div>
           </section>
 
-          {/* 최근 거래 */}
+          {/* 최근 거래 (DB 연동) */}
           <section className="bg-white rounded-2xl p-4 lg:p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-gray-800 flex items-center gap-2 text-lg">
@@ -104,15 +198,41 @@ export default function Home() {
               </Link>
             </div>
             <div className="grid grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-              {mockTrades.map((trade) => (
-                <div key={trade.id} className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors cursor-pointer">
-                  <div className="w-full aspect-square bg-gray-200 rounded-lg mb-2">
-                    <img src={trade.image} alt={trade.title} className="w-full h-full object-cover rounded-lg" />
-                  </div>
-                  <p className="text-sm font-medium text-gray-800 truncate">{trade.title}</p>
-                  <p className="text-xs text-orange-500 font-bold mt-1">{trade.price}</p>
-                </div>
-              ))}
+              {loading
+                ? [1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="aspect-square bg-gray-100 animate-pulse rounded-lg"
+                    />
+                  ))
+                : trades.map((trade) => (
+                    <Link
+                      key={trade.id}
+                      to={`/trade/${trade.id}`}
+                      className="block"
+                    >
+                      <div className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors cursor-pointer">
+                        <div className="w-full aspect-square bg-gray-200 rounded-lg mb-2">
+                          <img
+                            src={
+                              trade.image_url ||
+                              "https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&h=200&fit=crop"
+                            }
+                            alt={trade.title}
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        </div>
+                        <p className="text-sm font-medium text-gray-800 truncate">
+                          {trade.title}
+                        </p>
+                        <p className="text-xs text-orange-500 font-bold mt-1">
+                          {trade.price === 0
+                            ? "무료나눔"
+                            : `${trade.price?.toLocaleString()}원`}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
             </div>
           </section>
         </div>
@@ -120,15 +240,3 @@ export default function Home() {
     </div>
   );
 }
-
-const mockRecipes = [
-  { id: 1, title: "김치볶음밥", author: "자취고수123", time: "15분", image: "https://images.unsplash.com/photo-1588137378633-dea1336ce1e2?w=200&h=200&fit=crop" },
-  { id: 2, title: "간장계란밥", author: "요리초보", time: "5분", image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=200&h=200&fit=crop" },
-  { id: 3, title: "참치마요덮밥", author: "혼밥러버", time: "10분", image: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=200&h=200&fit=crop" },
-];
-
-const mockTrades = [
-  { id: 1, title: "대파", price: "1,000원", image: "https://images.unsplash.com/photo-1629798484280-e62d4dff3c42?w=200&h=200&fit=crop" },
-  { id: 2, title: "양파", price: "무료나눔", image: "https://images.unsplash.com/photo-1508747703725-719777637510?w=200&h=200&fit=crop" },
-  { id: 3, title: "달걀", price: "3,000원", image: "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=200&h=200&fit=crop" },
-];
