@@ -9,7 +9,7 @@ import {
   LogOut,
   ChevronRight,
 } from "lucide-react";
-import { supabase } from "../../utils/supabaseClient"; // FSD 구조에 따른 경로 확인
+import { supabase } from "../../utils/supabaseClient";
 
 export default function MyPage() {
   const navigate = useNavigate();
@@ -35,23 +35,30 @@ export default function MyPage() {
       if (user) {
         setUser(user);
 
-        // 2. 실제 통계 데이터 가져오기 (각 테이블의 카운트 조회)
-        // 주의: 테이블명이 다를 경우 본인의 DB 설계에 맞춰 수정하세요!
-        const [recipesRes, tradesRes] = await Promise.all([
-          supabase
-            .from("recipes")
-            .select("*", { count: "exact", head: true })
-            .eq("user_id", user.id),
+        // 2. 실제 통계 데이터 가져오기 (컬럼명 및 테이블 로직 수정)
+        // tradesRes: seller_id -> user_id로 수정 (400 에러 해결)
+        // recipesRes: 별도 테이블이 없다면 trades 테이블에서 type='community'로 조회
+        const [recipesRes, tradesRes, likesRes] = await Promise.all([
           supabase
             .from("trades")
             .select("*", { count: "exact", head: true })
-            .eq("seller_id", user.id),
+            .eq("user_id", user.id)
+            .eq("type", "community"),
+          supabase
+            .from("trades")
+            .select("*", { count: "exact", head: true })
+            .eq("user_id", user.id) // 400 에러 원인 수정 완료
+            .eq("type", "trade"),
+          supabase
+            .from("saved_recipes")
+            .select("*", { count: "exact", head: true })
+            .eq("user_id", user.id),
         ]);
 
         setStats({
           recipes: recipesRes.count || 0,
           trades: tradesRes.count || 0,
-          likes: user.user_metadata?.likes_count || 0, // 메타데이터 혹은 별도 쿼리 활용
+          likes: likesRes.count || 0, // 관심 목록 카운트로 반영
         });
       }
 
@@ -81,7 +88,7 @@ export default function MyPage() {
       </div>
     );
 
-  // 비로그인 뷰 (팀장님 코드 유지)
+  // 비로그인 뷰
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -134,8 +141,16 @@ export default function MyPage() {
         {/* Profile Section */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
-              <User className="w-9 h-9 text-orange-500" />
+            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center overflow-hidden">
+              {user.user_metadata?.avatar_url ? (
+                <img
+                  src={user.user_metadata.avatar_url}
+                  alt="avatar"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="w-9 h-9 text-orange-500" />
+              )}
             </div>
             <div className="flex-1">
               <h2 className="text-xl font-bold text-gray-800">
@@ -152,11 +167,11 @@ export default function MyPage() {
           </div>
         </div>
 
-        {/* Stats - 실제 숫자로 반영됨 */}
+        {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
           <StatCard count={stats.recipes} label="작성한 레시피" />
           <StatCard count={stats.trades} label="거래 건수" />
-          <StatCard count={stats.likes} label="받은 좋아요" />
+          <StatCard count={stats.likes} label="관심 목록" />
         </div>
 
         {/* Menu List */}
@@ -195,7 +210,6 @@ export default function MyPage() {
   );
 }
 
-// 가독성을 위한 컴포넌트 분리
 function StatCard({ count, label }: { count: number; label: string }) {
   return (
     <div className="bg-white rounded-xl p-4 text-center shadow-sm">

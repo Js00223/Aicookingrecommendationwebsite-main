@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router";
 import { supabase } from "../../utils/supabaseClient";
-import { MessageCircle, Heart, User, Clock } from "lucide-react";
+import { MessageCircle, Heart, User, Plus } from "lucide-react";
 
 export default function CommunityList() {
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ export default function CommunityList() {
         .select(
           `
           *,
-          author:user_id(full_name, avatar_url)
+          author:users!user_id(full_name, avatar_url)
         `,
         )
         .eq("type", "community")
@@ -44,7 +44,7 @@ export default function CommunityList() {
     );
 
   return (
-    <div className="pb-24 bg-gray-50 min-h-screen">
+    <div className="pb-24 bg-gray-50 min-h-screen relative">
       <header className="p-4 bg-white border-b sticky top-0 z-10">
         <h1 className="text-xl font-bold text-gray-900">커뮤니티</h1>
       </header>
@@ -63,6 +63,7 @@ export default function CommunityList() {
                   <img
                     src={post.author.avatar_url}
                     className="w-full h-full object-cover"
+                    alt="avatar"
                   />
                 ) : (
                   <User size={14} className="text-gray-400" />
@@ -84,7 +85,7 @@ export default function CommunityList() {
               {post.content || post.description}
             </p>
 
-            {/* 하단 아이콘 (우선 0으로 표시하거나 나중에 연동) */}
+            {/* 하단 아이콘 */}
             <div className="flex gap-4 text-gray-400">
               <div className="flex items-center gap-1">
                 <Heart size={16} />
@@ -104,6 +105,14 @@ export default function CommunityList() {
           </div>
         )}
       </div>
+
+      {/* ✅ 글쓰기 플로팅 버튼 추가 */}
+      <Link
+        to="/trades/new?type=community"
+        className="fixed bottom-24 right-6 bg-orange-500 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:bg-orange-600 transition-colors z-50 shadow-orange-200"
+      >
+        <Plus size={28} />
+      </Link>
     </div>
   );
 }
