@@ -1,12 +1,8 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router"; // router-dom으로 통일 권장
+import { useNavigate, Link } from "react-router";
 import { ArrowLeft, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
-import { createClient } from "@supabase/supabase-js";
-
-// 1. Supabase 설정 (env 파일에 넣는 것이 좋지만 우선 코드로 구성)
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// 1. 기존에 만들어둔 supabase 인스턴스를 가져옵니다 (중복 인스턴스 방지)
+import { supabase } from "../../utils/supabaseClient";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -30,7 +26,8 @@ export default function Login() {
 
       if (data.user) {
         alert(`${data.user.email}님, 환영합니다! 🍳`);
-        navigate("/mypage"); // 로그인 성공 시 메인으로 이동
+        // 성공 시 이동 (필요에 따라 /trade 혹은 /mypage로 이동)
+        navigate("/trade");
       }
     } catch (error: any) {
       alert(`로그인 실패: ${error.message || "정보를 확인해주세요."}`);
@@ -45,7 +42,7 @@ export default function Login() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: `${window.location.origin}/trade`,
         },
       });
       if (error) throw error;

@@ -1,48 +1,86 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router";
-import { ArrowLeft, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import {
+  ArrowLeft,
+  Mail,
+  Lock,
+  User,
+  Eye,
+  EyeOff,
+  Loader2,
+} from "lucide-react";
+// 1. supabase 인스턴스 가져오기
+import { supabase } from "../../utils/supabaseClient";
 
 export default function Signup() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false); // 로딩 상태 추가
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // 유효성 검사
     if (formData.password !== formData.confirmPassword) {
-      alert('비밀번호가 일치하지 않습니다.');
+      alert("비밀번호가 일치하지 않습니다.");
       return;
     }
 
     if (formData.password.length < 8) {
-      alert('비밀번호는 8자 이상이어야 합니다.');
+      alert("비밀번호는 8자 이상이어야 합니다.");
       return;
     }
 
-    // TODO: Implement signup logic
-    alert('회원가입 기능은 백엔드 연결 후 구현됩니다.');
+    setLoading(true);
+
+    try {
+      // 2. Supabase Auth에 회원가입 요청
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          // 가입 시 입력한 이름을 메타데이터로 저장
+          data: {
+            full_name: formData.name,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        alert("회원가입이 완료되었습니다! 로그인 페이지로 이동합니다. 🍳");
+        navigate("/login");
+      }
+    } catch (error: any) {
+      alert(`회원가입 실패: ${error.message || "다시 시도해주세요."}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-md mx-auto px-4 py-3">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 hover:bg-gray-100 rounded-lg"
+          >
             <ArrowLeft className="w-5 h-5" />
           </button>
         </div>
@@ -55,7 +93,6 @@ export default function Signup() {
         </div>
 
         <form onSubmit={handleSignup} className="space-y-4">
-          {/* Name Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               이름
@@ -70,11 +107,11 @@ export default function Signup() {
                 placeholder="이름을 입력하세요"
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-orange-500"
                 required
+                disabled={loading}
               />
             </div>
           </div>
 
-          {/* Email Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               이메일
@@ -89,11 +126,11 @@ export default function Signup() {
                 placeholder="example@email.com"
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-orange-500"
                 required
+                disabled={loading}
               />
             </div>
           </div>
 
-          {/* Password Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               비밀번호
@@ -101,25 +138,29 @@ export default function Signup() {
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="8자 이상 입력하세요"
                 className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-orange-500"
                 required
+                disabled={loading}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
               </button>
             </div>
           </div>
 
-          {/* Confirm Password Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               비밀번호 확인
@@ -127,25 +168,29 @@ export default function Signup() {
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
-                type={showConfirmPassword ? 'text' : 'password'}
+                type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="비밀번호를 다시 입력하세요"
                 className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-orange-500"
                 required
+                disabled={loading}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showConfirmPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
               </button>
             </div>
           </div>
 
-          {/* Terms Checkbox */}
           <div className="flex items-start gap-2 pt-2">
             <input
               type="checkbox"
@@ -154,23 +199,32 @@ export default function Signup() {
               required
             />
             <label htmlFor="terms" className="text-sm text-gray-600">
-              <span className="text-orange-500 font-medium">이용약관</span> 및{' '}
-              <span className="text-orange-500 font-medium">개인정보처리방침</span>에 동의합니다.
+              <span className="text-orange-500 font-medium">이용약관</span> 및{" "}
+              <span className="text-orange-500 font-medium">
+                개인정보처리방침
+              </span>
+              에 동의합니다.
             </label>
           </div>
 
-          {/* Signup Button */}
           <button
             type="submit"
-            className="w-full bg-orange-500 text-white font-bold py-3 px-6 rounded-xl hover:bg-orange-600 transition-colors mt-6"
+            disabled={loading}
+            className="w-full bg-orange-500 text-white font-bold py-3 px-6 rounded-xl hover:bg-orange-600 transition-colors mt-6 flex justify-center items-center"
           >
-            회원가입
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              "회원가입"
+            )}
           </button>
 
-          {/* Login Link */}
           <div className="text-center mt-6">
             <span className="text-gray-600">이미 계정이 있으신가요? </span>
-            <Link to="/login" className="text-orange-500 font-bold hover:text-orange-600">
+            <Link
+              to="/login"
+              className="text-orange-500 font-bold hover:text-orange-600"
+            >
               로그인
             </Link>
           </div>

@@ -19,6 +19,7 @@ import MyRecipes from "../pages/my-posts/MyRecipes";
 import MySales from "../pages/sales/MySales";
 import Likes from "../pages/likes/likes"; // 방금 만든 관심 목록
 import Account from "../pages/account"; // 방금 만든 계정 설정
+import ChatRoom from "./components/ChatRoom";
 
 export const router = createBrowserRouter([
   {
@@ -30,8 +31,9 @@ export const router = createBrowserRouter([
       { path: "community", Component: Community },
       { path: "community/:id", Component: CommunityDetail },
       { path: "trade", Component: Trade },
-      { path: "trade/:id", Component: TradeDetail },
+      { path: "trades/:id", Component: TradeDetail },
       { path: "chats", Component: ChatList },
+      { path: "chat/:id", Component: ChatRoom },
 
       // 기존 저장된 레시피 경로 (필요 시 유지)
       { path: "saved-recipes", Component: SavedRecipes },
