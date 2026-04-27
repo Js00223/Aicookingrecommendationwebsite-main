@@ -13,7 +13,6 @@ interface TradeItem {
   content?: string;
   type: "trade" | "community";
   created_at: string;
-  // 유저 정보를 조인해서 가져올 경우 대비
   user?: {
     full_name: string;
     avatar_url: string;
@@ -205,30 +204,31 @@ export default function Home() {
                       className="aspect-square bg-gray-100 animate-pulse rounded-lg"
                     />
                   ))
-                : trades.map((trade) => (
+                : trades.map((item) => (
+                    /* 중요: 라우터 설정에 맞춰 trades/:id 로 연결 */
                     <Link
-                      key={trade.id}
-                      to={`/trade/${trade.id}`}
+                      key={item.id}
+                      to={`/trades/${item.id}`}
                       className="block"
                     >
-                      <div className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors cursor-pointer">
+                      <div className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors cursor-pointer h-full">
                         <div className="w-full aspect-square bg-gray-200 rounded-lg mb-2">
                           <img
                             src={
-                              trade.image_url ||
+                              item.image_url ||
                               "https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&h=200&fit=crop"
                             }
-                            alt={trade.title}
+                            alt={item.title}
                             className="w-full h-full object-cover rounded-lg"
                           />
                         </div>
                         <p className="text-sm font-medium text-gray-800 truncate">
-                          {trade.title}
+                          {item.title}
                         </p>
                         <p className="text-xs text-orange-500 font-bold mt-1">
-                          {trade.price === 0
+                          {item.price === 0
                             ? "무료나눔"
-                            : `${trade.price?.toLocaleString()}원`}
+                            : `${item.price?.toLocaleString()}원`}
                         </p>
                       </div>
                     </Link>
