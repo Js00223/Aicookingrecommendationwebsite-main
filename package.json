@@ -88,6 +88,11 @@
   "pnpm": {
     "overrides": {
       "vite": "6.3.5"
+    },
+    "supportedArchitectures": {
+      "os": ["linux", "darwin", "win32"],
+      "cpu": ["x64", "arm64"],
+      "libc": ["glibc"]
     }
   }
 }
