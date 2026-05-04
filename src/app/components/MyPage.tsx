@@ -24,48 +24,67 @@ export default function MyPage() {
   });
 
   useEffect(() => {
+    let isMounted = true; // 메모리 누수 및 중복 실행 방지
+
     const getProfileAndStats = async () => {
-      setLoading(true);
+      try {
+        setLoading(true);
 
-      // 1. 현재 로그인 유저 정보 확인
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        // 1. getUser 대신 getSession을 먼저 호출하여 Lock 경쟁을 최소화합니다.
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
 
-      if (user) {
-        setUser(user);
+        if (sessionError) throw sessionError;
 
-        // 2. 실제 통계 데이터 가져오기 (컬럼명 및 테이블 로직 수정)
-        // tradesRes: seller_id -> user_id로 수정 (400 에러 해결)
-        // recipesRes: 별도 테이블이 없다면 trades 테이블에서 type='community'로 조회
-        const [recipesRes, tradesRes, likesRes] = await Promise.all([
-          supabase
-            .from("trades")
-            .select("*", { count: "exact", head: true })
-            .eq("user_id", user.id)
-            .eq("type", "community"),
-          supabase
-            .from("trades")
-            .select("*", { count: "exact", head: true })
-            .eq("user_id", user.id) // 400 에러 원인 수정 완료
-            .eq("type", "trade"),
-          supabase
-            .from("saved_recipes")
-            .select("*", { count: "exact", head: true })
-            .eq("user_id", user.id),
-        ]);
+        if (session?.user) {
+          if (isMounted) setUser(session.user);
 
-        setStats({
-          recipes: recipesRes.count || 0,
-          trades: tradesRes.count || 0,
-          likes: likesRes.count || 0, // 관심 목록 카운트로 반영
-        });
+          // 2. 실제 통계 데이터 가져오기
+          // Promise.all을 사용하여 병렬 처리하되, 세션 유저 ID를 활용합니다.
+          const [recipesRes, tradesRes, likesRes] = await Promise.all([
+            supabase
+              .from("trades")
+              .select("*", { count: "exact", head: true })
+              .eq("user_id", session.user.id)
+              .eq("type", "community"),
+            supabase
+              .from("trades")
+              .select("*", { count: "exact", head: true })
+              .eq("user_id", session.user.id)
+              .eq("type", "trade"),
+            supabase
+              .from("saved_recipes")
+              .select("*", { count: "exact", head: true })
+              .eq("user_id", session.user.id),
+          ]);
+
+          if (isMounted) {
+            setStats({
+              recipes: recipesRes.count || 0,
+              trades: tradesRes.count || 0,
+              likes: likesRes.count || 0,
+            });
+          }
+        }
+      } catch (error: any) {
+        // Lock 관련 에러는 서비스에 지장이 없으므로 경고만 띄웁니다.
+        if (error.message?.includes("lock")) {
+          console.warn("Supabase Auth Lock 경합이 감지되었습니다.");
+        } else {
+          console.error("데이터 로드 중 오류 발생:", error);
+        }
+      } finally {
+        if (isMounted) setLoading(false);
       }
-
-      setLoading(false);
     };
 
     getProfileAndStats();
+
+    return () => {
+      isMounted = false; // 언마운트 시 플래그 변경
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -194,7 +213,7 @@ export default function MyPage() {
           <MenuItem
             icon={<User className="w-5 h-5" />}
             label="계정 설정"
-            onClick={() => navigate("/settings/account")}
+            onClick={() => navigate("/settings")}
           />
         </div>
 

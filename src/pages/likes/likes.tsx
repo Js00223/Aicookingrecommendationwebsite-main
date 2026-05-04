@@ -35,12 +35,14 @@ export default function Likes() {
           return;
         }
 
-        // saved_recipes 테이블에서 현재 유저의 찜 목록을 가져오며 trades 정보를 조인합니다.
+        // 💡 수정 포인트: trade_id를 통한 조인 확인
+        // 만약 DB 컬럼명이 recipe_id라면 그대로 두시고, 일반적인 거래 테이블용이면 trade_id일 가능성이 큽니다.
         const { data, error } = await supabase
           .from("saved_recipes")
           .select(
             `
             id,
+            user_id,
             trades:recipe_id ( 
               id,
               item_name,
@@ -51,18 +53,18 @@ export default function Likes() {
             )
           `,
           )
-          .eq("user_id", user.id);
+          .eq("user_id", user.id); // ✅ 현재 로그인한 유저의 데이터만 필터링
 
         if (error) {
           console.error("데이터 조회 에러:", error.message);
         } else if (data) {
-          // 조인된 데이터가 배열이거나 객체일 경우를 대비해 포맷팅
+          // 데이터 포맷팅 및 null 제외 처리
           const formattedData = data
             .map((item: any) => ({
               id: item.id,
               trades: Array.isArray(item.trades) ? item.trades[0] : item.trades,
             }))
-            .filter((item: any) => item.trades !== null); // 데이터가 매칭되지 않는 건 제외
+            .filter((item: any) => item.trades !== null);
 
           setItems(formattedData);
         }
@@ -81,13 +83,11 @@ export default function Likes() {
     e: React.MouseEvent,
     savedId: string | number,
   ) => {
-    // 💡 핵심: 부모 요소(카드 div)의 onClick(상세페이지 이동)이 실행되지 않도록 막음
     e.stopPropagation();
 
     if (!window.confirm("관심 목록에서 삭제하시겠습니까?")) return;
 
     try {
-      // DB에서 해당 찜 기록 삭제
       const { error } = await supabase
         .from("saved_recipes")
         .delete()
@@ -95,7 +95,7 @@ export default function Likes() {
 
       if (error) throw error;
 
-      // 💡 UI 업데이트: 삭제된 아이템을 제외하고 상태값 변경 (새로고침 없이 즉시 반영)
+      // UI 즉각 반영
       setItems((prev) => prev.filter((item) => item.id !== savedId));
     } catch (err) {
       console.error("해제 실패:", err);
@@ -105,7 +105,6 @@ export default function Likes() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 상단 헤더 */}
       <header className="bg-white border-b p-4 flex items-center gap-4 sticky top-0 z-40">
         <button
           onClick={() => navigate(-1)}
@@ -113,10 +112,9 @@ export default function Likes() {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-lg font-bold">관심 거래</h1>
+        <h1 className="text-lg font-bold">관심 목록 ({items.length})</h1>
       </header>
 
-      {/* 관심 목록 리스트 */}
       <div className="max-w-md mx-auto p-4">
         {loading ? (
           <div className="text-center py-20">
@@ -140,7 +138,6 @@ export default function Likes() {
                   onClick={() => navigate(`/trades/${trade.id}`)}
                   className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex active:scale-[0.98] transition-all cursor-pointer relative"
                 >
-                  {/* 상품 이미지 구역 */}
                   <div className="w-24 h-24 bg-gray-100 flex-shrink-0">
                     {trade.image_url ? (
                       <img
@@ -149,13 +146,12 @@ export default function Likes() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs text-center p-2">
                         이미지 없음
                       </div>
                     )}
                   </div>
 
-                  {/* 상품 정보 구역 */}
                   <div className="flex-1 p-3 flex flex-col justify-between">
                     <div>
                       <div className="flex justify-between items-start">
@@ -163,11 +159,9 @@ export default function Likes() {
                           {trade.item_name}
                         </h3>
 
-                        {/* 💡 찜 해제 버튼: 하트 아이콘 클릭 시 handleUnsave 실행 */}
                         <button
                           onClick={(e) => handleUnsave(e, item.id)}
                           className="p-1 -mr-1 hover:bg-gray-100 rounded-full transition-colors z-10"
-                          title="관심 목록에서 제거"
                         >
                           <Heart className="w-5 h-5 text-orange-500 fill-orange-500 flex-shrink-0" />
                         </button>
