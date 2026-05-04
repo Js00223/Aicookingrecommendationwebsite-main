@@ -191,7 +191,7 @@ export default function TradeDetail() {
 
       <div className="w-full aspect-video bg-gray-100 mt-14">
         <img
-          src={trade.image_url || "https://via.placeholder.com/600x400"}
+          src={trade.image_url || "https://placehold.co//600x400"}
           className="w-full h-full object-cover"
           alt={trade.title}
         />
