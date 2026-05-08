@@ -27,32 +27,36 @@ export default function SavedRecipeDetail() {
   const [recipe, setRecipe] = useState<SavedRecipe | null>(null);
 
   useEffect(() => {
-    const savedRecipes: SavedRecipe[] = JSON.parse(localStorage.getItem('savedRecipes') || '[]');
-    const foundRecipe = savedRecipes.find(r => r.id === id);
+    const savedRecipes: SavedRecipe[] = JSON.parse(
+      localStorage.getItem("savedRecipes") || "[]",
+    );
+    const foundRecipe = savedRecipes.find((r) => r.id === id);
     if (foundRecipe) {
       setRecipe(foundRecipe);
     } else {
-      navigate('/saved-recipes');
+      navigate("/saved-recipes");
     }
   }, [id, navigate]);
 
   const handleDelete = () => {
-    if (confirm('이 레시피를 삭제하시겠습니까?')) {
-      const savedRecipes: SavedRecipe[] = JSON.parse(localStorage.getItem('savedRecipes') || '[]');
-      const updatedRecipes = savedRecipes.filter(r => r.id !== id);
-      localStorage.setItem('savedRecipes', JSON.stringify(updatedRecipes));
-      navigate('/saved-recipes');
+    if (confirm("이 레시피를 삭제하시겠습니까?")) {
+      const savedRecipes: SavedRecipe[] = JSON.parse(
+        localStorage.getItem("savedRecipes") || "[]",
+      );
+      const updatedRecipes = savedRecipes.filter((r) => r.id !== id);
+      localStorage.setItem("savedRecipes", JSON.stringify(updatedRecipes));
+      navigate("/saved-recipes");
     }
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -70,7 +74,10 @@ export default function SavedRecipeDetail() {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-gray-100 rounded-lg"
+            >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <h1 className="text-lg font-bold">레시피 상세</h1>
@@ -124,7 +131,8 @@ export default function SavedRecipeDetail() {
           </div>
           {recipe.userChoices.ingredients && (
             <p className="text-sm text-gray-600 mt-2">
-              <span className="font-medium">사용 재료:</span> {recipe.userChoices.ingredients}
+              <span className="font-medium">사용 재료:</span>{" "}
+              {recipe.userChoices.ingredients}
             </p>
           )}
         </div>
@@ -155,7 +163,9 @@ export default function SavedRecipeDetail() {
                   <div className="flex-shrink-0 w-8 h-8 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-sm">
                     {idx + 1}
                   </div>
-                  <p className="flex-1 text-gray-700 leading-relaxed pt-1">{step}</p>
+                  <p className="flex-1 text-gray-700 leading-relaxed pt-1">
+                    {step}
+                  </p>
                 </div>
               ))}
             </div>

@@ -27,14 +27,19 @@ export default function SavedRecipes() {
 
   useEffect(() => {
     // 로컬 스토리지에서 저장된 레시피 불러오기
-    const savedRecipes = JSON.parse(localStorage.getItem('savedRecipes') || '[]');
+    const savedRecipes = JSON.parse(
+      localStorage.getItem("savedRecipes") || "[]",
+    );
     setRecipes(savedRecipes.reverse()); // 최신순으로 정렬
   }, []);
 
   const handleDelete = (id: string) => {
-    if (confirm('이 레시피를 삭제하시겠습니까?')) {
-      const updatedRecipes = recipes.filter(recipe => recipe.id !== id);
-      localStorage.setItem('savedRecipes', JSON.stringify(updatedRecipes.reverse()));
+    if (confirm("이 레시피를 삭제하시겠습니까?")) {
+      const updatedRecipes = recipes.filter((recipe) => recipe.id !== id);
+      localStorage.setItem(
+        "savedRecipes",
+        JSON.stringify(updatedRecipes.reverse()),
+      );
       setRecipes(updatedRecipes);
     }
   };
@@ -50,7 +55,7 @@ export default function SavedRecipes() {
     if (minutes < 60) return `${minutes}분 전`;
     if (hours < 24) return `${hours}시간 전`;
     if (days < 7) return `${days}일 전`;
-    return date.toLocaleDateString('ko-KR');
+    return date.toLocaleDateString("ko-KR");
   };
 
   return (
@@ -58,7 +63,10 @@ export default function SavedRecipes() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="lg:hidden p-2 hover:bg-gray-100 rounded-lg">
+          <button
+            onClick={() => navigate(-1)}
+            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+          >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
@@ -87,7 +95,9 @@ export default function SavedRecipes() {
                 <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-full">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <h3 className="text-lg font-bold text-gray-800 mb-1">{recipe.name}</h3>
+                      <h3 className="text-lg font-bold text-gray-800 mb-1">
+                        {recipe.name}
+                      </h3>
                       <div className="flex items-center gap-3 text-sm text-gray-500">
                         <span>{recipe.difficulty}</span>
                         <span className="flex items-center gap-1">
@@ -125,7 +135,9 @@ export default function SavedRecipes() {
                     )}
                   </div>
 
-                  <p className="text-xs text-gray-400">{formatDate(recipe.savedAt)}</p>
+                  <p className="text-xs text-gray-400">
+                    {formatDate(recipe.savedAt)}
+                  </p>
                 </div>
               </Link>
             ))}
