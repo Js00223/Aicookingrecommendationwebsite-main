@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "vite"
+    "dev": "vite",
+    "lint": "vite build --mode development",
+    "lint:fix": "vite build --mode development",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md}\"",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
@@ -70,6 +74,7 @@
     "@tailwindcss/vite": "4.1.12",
     "@types/node": "^25.6.0",
     "@vitejs/plugin-react": "4.7.0",
+    "husky": "^8.0.3",
     "tailwindcss": "4.1.12",
     "vite": "^6.4.2"
   },
@@ -90,9 +95,18 @@
       "vite": "6.3.5"
     },
     "supportedArchitectures": {
-      "os": ["linux", "darwin", "win32"],
-      "cpu": ["x64", "arm64"],
-      "libc": ["glibc"]
+      "os": [
+        "linux",
+        "darwin",
+        "win32"
+      ],
+      "cpu": [
+        "x64",
+        "arm64"
+      ],
+      "libc": [
+        "glibc"
+      ]
     }
   }
 }
