@@ -16,10 +16,10 @@ const getApiBase = () => {
   const hostname = window.location.hostname;
 
   // GitHub Codespaces 환경 감지
-  if (hostname.includes('github.dev')) {
+  if (hostname.includes("github.dev")) {
     // 현재 프론트엔드 호스트네임에서 포트 부분(-5173 등)을 떼어내고 백엔드 포트(-8000)를 붙입니다.
     // 보통 '유저명-레포명-랜덤값-5173.app.github.dev' 형태입니다.
-    const baseUrl = hostname.split('-5173')[0];
+    const baseUrl = hostname.split("-5173")[0];
     return `https://${baseUrl}-8000.app.github.dev/api`;
   }
 
