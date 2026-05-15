@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ArrowLeft, Send, Sparkles, ChefHat } from "lucide-react";
 import { useNavigate } from "react-router";
 import axios from "axios";
-import { getAiRecipe } from "../../api/foodketapi"; // 경로가 맞는지 확인해 주세요!
+import { getAiRecipe } from "../../api/foodketapi"; // 경로가 맞는지 꼭 확인해 주세요!
 
 type ChatStep =
   | "purpose"
@@ -54,76 +54,12 @@ export default function AIChat() {
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
 
   const recommendedIngredients: Record<string, string[]> = {
-    한식: [
-      "밥",
-      "김치",
-      "계란",
-      "대파",
-      "간장",
-      "참기름",
-      "고추장",
-      "된장",
-      "두부",
-      "당근",
-    ],
-    양식: [
-      "파스타면",
-      "토마토소스",
-      "치즈",
-      "올리브유",
-      "마늘",
-      "양파",
-      "버터",
-      "크림",
-      "베이컨",
-    ],
-    중식: [
-      "밥",
-      "계란",
-      "대파",
-      "간장",
-      "굴소스",
-      "청경채",
-      "두부",
-      "당근",
-      "양파",
-      "식용유",
-    ],
-    일식: [
-      "밥",
-      "계란",
-      "간장",
-      "김",
-      "미림",
-      "두부",
-      "대파",
-      "참치캔",
-      "깨",
-      "와사비",
-    ],
-    분식: [
-      "라면",
-      "떡",
-      "계란",
-      "대파",
-      "김치",
-      "어묵",
-      "고추장",
-      "치즈",
-      "햄",
-      "양파",
-    ],
-    기타: [
-      "밥",
-      "계란",
-      "대파",
-      "간장",
-      "식용유",
-      "마늘",
-      "양파",
-      "소금",
-      "후추",
-    ],
+    한식: ["밥", "김치", "계란", "대파", "간장", "참기름", "고추장", "된장", "두부", "당근"],
+    양식: ["파스타면", "토마토소스", "치즈", "올리브유", "마늘", "양파", "버터", "크림", "베이컨"],
+    중식: ["밥", "계란", "대파", "간장", "굴소스", "청경채", "두부", "당근", "양파", "식용유"],
+    일식: ["밥", "계란", "간장", "김", "미림", "두부", "대파", "참치캔", "깨", "와사비"],
+    분식: ["라면", "떡", "계란", "대파", "김치", "어묵", "고추장", "치즈", "햄", "양파"],
+    기타: ["밥", "계란", "대파", "간장", "식용유", "마늘", "양파", "소금", "후추"],
   };
 
   const questions = {
@@ -150,10 +86,7 @@ export default function AIChat() {
   };
 
   const handleChoice = (choice: string) => {
-    const newMessages = [
-      ...messages,
-      { type: "user" as const, content: choice },
-    ];
+    const newMessages = [...messages, { type: "user" as const, content: choice }];
     setMessages(newMessages);
 
     const nextStep = getNextStep(step);
@@ -175,10 +108,7 @@ export default function AIChat() {
             },
           ]);
         } else {
-          setMessages([
-            ...newMessages,
-            { type: "bot", content: question.question },
-          ]);
+          setMessages([...newMessages, { type: "bot", content: question.question }]);
         }
         setStep(nextStep);
       }
@@ -187,9 +117,7 @@ export default function AIChat() {
 
   const handleIngredientToggle = (ingredient: string) => {
     setSelectedIngredients((prev) =>
-      prev.includes(ingredient)
-        ? prev.filter((item) => item !== ingredient)
-        : [...prev, ingredient],
+      prev.includes(ingredient) ? prev.filter((item) => item !== ingredient) : [...prev, ingredient]
     );
   };
 
@@ -197,18 +125,12 @@ export default function AIChat() {
     if (step === "ingredients") {
       const allIngredients = [
         ...selectedIngredients,
-        ...inputValue
-          .split(/[,，\s]+/)
-          .map((i) => i.trim())
-          .filter((i) => i.length > 0),
+        ...inputValue.split(/[,，\s]+/).map((i) => i.trim()).filter((i) => i.length > 0),
       ];
       const ingredientsText = [...new Set(allIngredients)].join(", ");
       if (!ingredientsText.trim()) return;
 
-      const newMessages = [
-        ...messages,
-        { type: "user" as const, content: ingredientsText },
-      ];
+      const newMessages = [...messages, { type: "user" as const, content: ingredientsText }];
       setMessages(newMessages);
       const nextStep = getNextStep(step);
       const updatedChoices = { ...userChoices, ingredients: ingredientsText };
@@ -218,22 +140,13 @@ export default function AIChat() {
       setTimeout(() => {
         if (nextStep === "result") generateRecipe(updatedChoices);
         else {
-          setMessages([
-            ...newMessages,
-            {
-              type: "bot",
-              content: questions[nextStep as keyof typeof questions].question,
-            },
-          ]);
+          setMessages([...newMessages, { type: "bot", content: questions[nextStep as keyof typeof questions].question }]);
           setStep(nextStep);
         }
       }, 500);
     } else {
       if (!inputValue.trim()) return;
-      const newMessages = [
-        ...messages,
-        { type: "user" as const, content: inputValue },
-      ];
+      const newMessages = [...messages, { type: "user" as const, content: inputValue }];
       setMessages(newMessages);
       const nextStep = getNextStep(step);
       const updatedChoices = { ...userChoices, [step]: inputValue };
@@ -242,13 +155,7 @@ export default function AIChat() {
       setTimeout(() => {
         if (nextStep === "result") generateRecipe(updatedChoices);
         else {
-          setMessages([
-            ...newMessages,
-            {
-              type: "bot",
-              content: questions[nextStep as keyof typeof questions].question,
-            },
-          ]);
+          setMessages([...newMessages, { type: "bot", content: questions[nextStep as keyof typeof questions].question }]);
           setStep(nextStep);
         }
       }, 500);
@@ -256,14 +163,7 @@ export default function AIChat() {
   };
 
   const getNextStep = (currentStep: ChatStep): ChatStep => {
-    const steps: ChatStep[] = [
-      "purpose",
-      "style",
-      "ingredients",
-      "cooking",
-      "time",
-      "result",
-    ];
+    const steps: ChatStep[] = ["purpose", "style", "ingredients", "cooking", "time", "result"];
     const currentIndex = steps.indexOf(currentStep);
     return steps[currentIndex + 1];
   };
@@ -273,24 +173,22 @@ export default function AIChat() {
       ...prev,
       {
         type: "bot",
-        content:
-          "잠시만 기다려주세요... AI가 당신만을 위한 레시피를 생성하고 있습니다 🔍",
+        content: "잠시만 기다려주세요... AI가 당신만을 위한 레시피를 생성하고 있습니다 🔍",
       },
     ]);
 
-   try {
-  // 기존 axios.post 코드를 아래 한 줄로 대체합니다.
-  const ingredientsArray = choices.ingredients?.split(",").map((i) => i.trim()) || [];
-  const responseData = await getAiRecipe(ingredientsArray, "user_123");
+    try {
+      // 1. 재료 가공
+      const ingredientsArray = choices.ingredients?.split(",").map((i) => i.trim()) || [];
+      
+      // 2. 중앙 관리 API 호출 (responseData로 명확하게 수신)
+      const data = await getAiRecipe(ingredientsArray, "user_123");
 
-  // responseData를 사용하여 이후 로직 진행 (기존 response.data 역할)
-  console.log("레시피 생성 성공:", responseData);
-  // ... 이후 상태 업데이트 로직
+      console.log("레시피 생성 성공:", data);
 
-      // API 응답 데이터 (JSON 파싱 처리)
-      const rawContent = response.data.recipe;
-      const jsonContent =
-        typeof rawContent === "string"
+      // 3. API 응답 데이터 파싱 (이미 api.ts에서 data를 반환하므로 response.data 대신 data 사용)
+      const rawContent = data.recipe;
+      const jsonContent = typeof rawContent === "string"
           ? JSON.parse(rawContent.replace(/```json|```/g, ""))
           : rawContent;
 
@@ -328,24 +226,17 @@ export default function AIChat() {
         ...prev.slice(0, -1),
         {
           type: "bot",
-          content:
-            "죄송합니다. 레시피 생성 중 오류가 발생했습니다. 서버 상태를 확인해주세요. 😢",
+          content: "죄송합니다. 레시피 생성 중 오류가 발생했습니다. 서버 상태를 확인해주세요. 😢",
         },
       ]);
     }
   };
 
-  const currentQuestion =
-    step !== "result" ? questions[step as keyof typeof questions] : null;
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 hover:bg-gray-100 rounded-lg"
-          >
+          <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
@@ -357,20 +248,9 @@ export default function AIChat() {
 
       <div className="flex-1 overflow-y-auto max-w-md mx-auto w-full px-4 py-4 space-y-4">
         {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                msg.type === "user"
-                  ? "bg-orange-500 text-white"
-                  : "bg-white text-gray-800 shadow-sm border border-gray-100"
-              }`}
-            >
-              {msg.type === "bot" && (
-                <Sparkles className="w-4 h-4 text-orange-500 inline-block mr-2" />
-              )}
+          <div key={idx} className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}>
+            <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${msg.type === "user" ? "bg-orange-500 text-white" : "bg-white text-gray-800 shadow-sm border border-gray-100"}`}>
+              {msg.type === "bot" && <Sparkles className="w-4 h-4 text-orange-500 inline-block mr-2" />}
               <span className="whitespace-pre-line">{msg.content}</span>
             </div>
           </div>
@@ -383,11 +263,7 @@ export default function AIChat() {
             {currentQuestion && !("freeInput" in currentQuestion) ? (
               <div className="grid grid-cols-2 gap-2">
                 {currentQuestion.options?.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => handleChoice(option)}
-                    className="bg-orange-50 text-orange-600 font-medium py-3 px-4 rounded-xl hover:bg-orange-100 transition-colors border border-orange-200"
-                  >
+                  <button key={option} onClick={() => handleChoice(option)} className="bg-orange-50 text-orange-600 font-medium py-3 px-4 rounded-xl hover:bg-orange-100 transition-colors border border-orange-200">
                     {option}
                   </button>
                 ))}
@@ -400,11 +276,7 @@ export default function AIChat() {
                       <button
                         key={ing}
                         onClick={() => handleIngredientToggle(ing)}
-                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                          selectedIngredients.includes(ing)
-                            ? "bg-orange-500 text-white"
-                            : "bg-gray-100 text-gray-700"
-                        }`}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${selectedIngredients.includes(ing) ? "bg-orange-500 text-white" : "bg-gray-100 text-gray-700"}`}
                       >
                         {ing} {selectedIngredients.includes(ing) ? "✓" : "+"}
                       </button>
@@ -420,10 +292,7 @@ export default function AIChat() {
                     placeholder="재료를 입력하거나 선택하세요"
                     className="flex-1 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-orange-500"
                   />
-                  <button
-                    onClick={handleFreeInput}
-                    className="bg-orange-500 text-white p-3 rounded-xl hover:bg-orange-600"
-                  >
+                  <button onClick={handleFreeInput} className="bg-orange-500 text-white p-3 rounded-xl hover:bg-orange-600">
                     <Send className="w-5 h-5" />
                   </button>
                 </div>
@@ -438,13 +307,8 @@ export default function AIChat() {
           <button
             onClick={() => {
               if (currentRecipe) {
-                const saved = JSON.parse(
-                  localStorage.getItem("savedRecipes") || "[]",
-                );
-                localStorage.setItem(
-                  "savedRecipes",
-                  JSON.stringify([...saved, currentRecipe]),
-                );
+                const saved = JSON.parse(localStorage.getItem("savedRecipes") || "[]");
+                localStorage.setItem("savedRecipes", JSON.stringify([...saved, currentRecipe]));
                 alert("레시피 저장 완료!");
               }
               navigate("/");
@@ -453,10 +317,7 @@ export default function AIChat() {
           >
             저장하기
           </button>
-          <button
-            onClick={() => window.location.reload()}
-            className="flex-1 bg-gray-100 text-gray-800 font-medium py-3 rounded-xl"
-          >
+          <button onClick={() => window.location.reload()} className="flex-1 bg-gray-100 text-gray-800 font-medium py-3 rounded-xl">
             새로 시작
           </button>
         </div>
