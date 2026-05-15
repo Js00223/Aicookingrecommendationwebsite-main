@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ArrowLeft, Send, Sparkles, ChefHat } from "lucide-react";
 import { useNavigate } from "react-router";
 import axios from "axios";
+import { getAiRecipe } from "../api/foodketapi"; // 경로가 맞는지 확인해 주세요!
 
 type ChatStep =
   | "purpose"
@@ -277,16 +278,14 @@ export default function AIChat() {
       },
     ]);
 
-    try {
-      // 백엔드 API 호출
-      const response = await axios.post(
-        "http://localhost:8000/api/ai/recommend",
-        {
-          ingredients:
-            choices.ingredients?.split(",").map((i) => i.trim()) || [],
-          user_id: "user_123",
-        },
-      );
+   try {
+  // 기존 axios.post 코드를 아래 한 줄로 대체합니다.
+  const ingredientsArray = choices.ingredients?.split(",").map((i) => i.trim()) || [];
+  const responseData = await getAiRecipe(ingredientsArray, "user_123");
+
+  // responseData를 사용하여 이후 로직 진행 (기존 response.data 역할)
+  console.log("레시피 생성 성공:", responseData);
+  // ... 이후 상태 업데이트 로직
 
       // API 응답 데이터 (JSON 파싱 처리)
       const rawContent = response.data.recipe;
