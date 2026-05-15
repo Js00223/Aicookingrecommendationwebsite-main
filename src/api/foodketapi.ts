@@ -5,32 +5,15 @@ import axios from "axios";
  * 환경에 따라 API 베이스 URL을 동적으로 결정합니다.
  */
 const getApiBase = () => {
-  // 1. Vercel 환경 변수 확인
-  let envUrl = import.meta.env.VITE_API_URL;
+  // 환경 변수를 못 읽는 상황이라면 강제로 Render 주소를 반환하게 함
+  const isProduction = window.location.hostname !== "localhost";
 
-  if (envUrl) {
-    // 끝에 슬래시가 있다면 제거
-    envUrl = envUrl.replace(/\/$/, "");
-    
-    // [보안강화] 모바일 Mixed Content 차단을 막기 위해 http를 https로 강제 변환
-    if (envUrl.startsWith("http://") && !envUrl.includes("localhost")) {
-      envUrl = envUrl.replace("http://", "https://");
-    }
-
-    // 만약 환경변수에 /api가 안 붙어있다면 붙여줌
-    return envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
+  if (isProduction) {
+    // 여기에 본인의 실제 Render 주소를 직접 넣으세요
+    return "https://foodket-2.onrender.com/api";
   }
 
-  const hostname = window.location.hostname;
-
-  // 2. GitHub Codespaces 환경 감지
-  if (hostname.includes("github.dev")) {
-    const baseUrl = hostname.split("-5173")[0];
-    return `https://${baseUrl}-8000.app.github.dev/api`;
-  }
-
-  // 3. 로컬 환경
-  return "https://foodket-2.onrender.com/api";
+  return "http://localhost:8000/api";
 };
 
 const API_BASE = getApiBase();
