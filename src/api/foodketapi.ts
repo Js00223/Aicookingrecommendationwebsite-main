@@ -5,24 +5,26 @@ import axios from "axios";
  * 환경에 따라 API 베이스 URL을 동적으로 결정합니다.
  */
 const getApiBase = () => {
-  // 환경 변수를 못 읽는 상황이라면 강제로 Render 주소를 반환하게 함
-  const isProduction = window.location.hostname !== "localhost";
+  // 로컬 환경인지 확인
+  const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 
-  if (isProduction) {
-    // 여기에 본인의 실제 Render 주소를 직접 넣으세요
-    return "https://foodket-idb5.onrender.com";
+  if (isLocal) {
+    // 로컬 백엔드 주소
+    return "http://localhost:8000/api";
   }
 
-  return "http://localhost:8000/api";
+  // 실제 배포된 Render 백엔드 주소 (idb5 버전으로 고정)
+  // 뒤에 /api를 붙여서 엔드포인트 구조를 맞춥니다.
+  return "https://foodket-idb5.onrender.com/api";
 };
 
 const API_BASE = getApiBase();
 
-// --- AI 관련 ---
+// --- 1. AI 관련 (레시피 추천) ---
 export const getAiRecipe = async (ingredients: string[], userId: string) => {
   const targetUrl = `${API_BASE}/ai/recommend`;
   
-  // 배포 환경에서 모바일 디버깅을 위해 콘솔에 주소 출력
+  // 디버깅을 위해 호출하는 최종 주소를 콘솔에 출력
   console.log("🚀 Calling API:", targetUrl);
   
   try {
@@ -37,7 +39,7 @@ export const getAiRecipe = async (ingredients: string[], userId: string) => {
   }
 };
 
-// --- 거래 게시판 관련 ---
+// --- 2. 거래 게시판 관련 ---
 export const getTradePosts = async () => {
   const { data, error } = await supabase
     .from("trades")
@@ -53,7 +55,7 @@ export const createTradePost = async (postData: any) => {
   return data;
 };
 
-// --- 커뮤니티 댓글 관련 ---
+// --- 3. 커뮤니티 댓글 관련 ---
 export const getComments = async (postId: number) => {
   const { data, error } = await supabase
     .from("comments")
@@ -62,3 +64,8 @@ export const getComments = async (postId: number) => {
   if (error) throw error;
   return data;
 };
+
+/**
+ * 참고: 이후에 추가적인 API 호출 함수가 필요하면 
+ * 아래에 동일한 방식으로 API_BASE를 사용하여 추가하면 됩니다.
+ */
